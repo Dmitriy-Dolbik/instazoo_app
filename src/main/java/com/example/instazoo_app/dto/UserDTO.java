@@ -1,6 +1,5 @@
 package com.example.instazoo_app.dto;
 
-import com.example.instazoo_app.annotations.PasswordMatches;
 import com.example.instazoo_app.annotations.ValidEmail;
 import lombok.Data;
 
@@ -10,20 +9,13 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Size;
 
 @Data
-@PasswordMatches
 public class UserDTO {
-    @NotEmpty(message = "Please enter your name")
+    private Long id;
+    @NotEmpty
     private String name;
-    @NotEmpty(message = "Please enter your username")
-    private String username;
-    @NotEmpty(message = "Please enter your lastname")
+    @NotEmpty
     private String lastname;
-    @Email(message = "It should have email format")
-    @NotBlank(message = "User email is required")
-    @ValidEmail
-    private String email;
-    @NotEmpty(message = "Password is required")
-    @Size(min = 6, message = "Password must contain more than 6 characters")
-    private String password;
-    private String confirmPassword;
+    @NotEmpty
+    private String username;
+    private String bio;
 }

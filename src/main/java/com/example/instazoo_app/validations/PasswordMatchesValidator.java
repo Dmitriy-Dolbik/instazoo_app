@@ -1,7 +1,7 @@
 package com.example.instazoo_app.validations;
 
 import com.example.instazoo_app.annotations.PasswordMatches;
-import com.example.instazoo_app.dto.UserDTO;
+import com.example.instazoo_app.payload.resquest.SignupRequest;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -14,7 +14,7 @@ public class PasswordMatchesValidator implements ConstraintValidator<PasswordMat
 
     @Override
     public boolean isValid(Object obj, ConstraintValidatorContext constraintValidatorContext) {
-        UserDTO userSignupRequest = (UserDTO) obj;
+        SignupRequest userSignupRequest = (SignupRequest) obj;
         return userSignupRequest.getPassword().equals(userSignupRequest.getConfirmPassword());
     }
 }

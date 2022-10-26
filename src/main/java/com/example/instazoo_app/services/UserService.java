@@ -1,30 +1,41 @@
 package com.example.instazoo_app.services;
 
+import com.example.instazoo_app.dto.UserDTO;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.repositories.UsersRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.util.Optional;
 
 @Service
 public class UserService {
-    public static final Logger LOG = LoggerFactory.getLogger(UserService.class);
     private final UsersRepository usersRepository;
-    private final PasswordEncoder passwordEncoder;
     @Autowired
-    public UserService(UsersRepository usersRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UsersRepository usersRepository) {
         this.usersRepository = usersRepository;
-        this.passwordEncoder = passwordEncoder;
     }
-
-
+    public User updateUser(UserDTO userDTO, Principal principal){
+        User user = getUserByPrincipal(principal);
+        user.setName(userDTO.getName());
+        user.setLastname(userDTO.getLastname());
+        user.setBio(userDTO.getBio());
+        return usersRepository.save(user);
+    }
+    public User getCurrentUser(Principal principal){
+        return getUserByPrincipal(principal);
+    }
+    private User getUserByPrincipal(Principal principal){
+        String username = principal.getName();
+        return usersRepository.findUserByUsername(username)
+                .orElseThrow(()->new UsernameNotFoundException(
+                        "Username not found with username : "+username));
+    }
     public Optional<User> findUserByEmail(String email) {
         return usersRepository.findUserByEmail(email);
     }
-
-
 }
+
+

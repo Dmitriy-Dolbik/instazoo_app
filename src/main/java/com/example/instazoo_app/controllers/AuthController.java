@@ -1,10 +1,9 @@
 package com.example.instazoo_app.controllers;
 
-import com.example.instazoo_app.dto.UserDTO;
+import com.example.instazoo_app.payload.resquest.SignupRequest;
 import com.example.instazoo_app.exceptions.AuthException;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.payload.response.AuthErrorResponse;
-import com.example.instazoo_app.payload.response.InvalidLoginResponse;
 import com.example.instazoo_app.payload.response.JWTTokenSuccessResponse;
 import com.example.instazoo_app.payload.response.MessageResponse;
 import com.example.instazoo_app.payload.resquest.LoginRequest;
@@ -22,7 +21,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -72,9 +70,9 @@ public class AuthController {
     }
     @PostMapping("/signup")
     public ResponseEntity<Object> registerUser(@RequestBody @Valid
-                                               UserDTO userDTO,
+                                                   SignupRequest signupRequest,
                                                BindingResult bindingResult){
-        User user = convertToUser(userDTO);
+        User user = convertToUser(signupRequest);
         userValidator.validate(user,bindingResult);
         if (bindingResult.hasErrors()){
             returnErrorsToClient(bindingResult);
@@ -82,8 +80,8 @@ public class AuthController {
         registrationService.register(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
-    private User convertToUser(UserDTO userDTO){
-        return modelMapper.map(userDTO, User.class);
+    private User convertToUser(SignupRequest signupRequest){
+        return modelMapper.map(signupRequest, User.class);
     }
     @ExceptionHandler
     private ResponseEntity<AuthErrorResponse> handleException(@NotNull final AuthException exc){

@@ -12,7 +12,7 @@ import org.springframework.validation.ObjectError;
 import java.util.HashMap;
 import java.util.Map;
 
-@Component
+/*@Component
 public class ResponseErrorValidation {
 
     public ResponseEntity<Object> mapValidationService(BindingResult result){
@@ -31,5 +31,5 @@ public class ResponseErrorValidation {
         }
         return null;
     }
-}
+}*/
 
