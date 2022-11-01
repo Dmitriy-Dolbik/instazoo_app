@@ -1,12 +1,12 @@
 package com.example.instazoo_app.controllers;
 
-import com.example.instazoo_app.payload.resquest.SignupRequest;
 import com.example.instazoo_app.exceptions.AuthException;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.payload.response.AuthErrorResponse;
 import com.example.instazoo_app.payload.response.JWTTokenSuccessResponse;
 import com.example.instazoo_app.payload.response.MessageResponse;
 import com.example.instazoo_app.payload.resquest.LoginRequest;
+import com.example.instazoo_app.payload.resquest.SignupRequest;
 import com.example.instazoo_app.security.JWTTokenProvider;
 import com.example.instazoo_app.security.SecurityConstants;
 import com.example.instazoo_app.services.RegistrationService;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import static com.example.instazoo_app.util.ErrorUtil.returnErrorsToClient;
+import static com.example.instazoo_app.util.ErrorUtil2.createErrorMessageToClient;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -53,7 +53,8 @@ public class AuthController {
                                                    LoginRequest loginRequest,
                                                    BindingResult bindingResult){
         if (bindingResult.hasErrors()){
-            returnErrorsToClient(bindingResult);
+            String errorMsg = createErrorMessageToClient(bindingResult);
+            throw new AuthException(errorMsg);
         }
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
@@ -75,7 +76,8 @@ public class AuthController {
         User user = convertToUser(signupRequest);
         userValidator.validate(user,bindingResult);
         if (bindingResult.hasErrors()){
-            returnErrorsToClient(bindingResult);
+            String errorMsg = createErrorMessageToClient(bindingResult);
+            throw new AuthException(errorMsg);
         }
         registrationService.register(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));

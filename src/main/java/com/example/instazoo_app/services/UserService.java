@@ -17,11 +17,11 @@ public class UserService {
     public UserService(UsersRepository usersRepository) {
         this.usersRepository = usersRepository;
     }
-    public User updateUser(User userForUpdate, Principal principal){
+    public User updateUser(User userUpdated, Principal principal){
         User user = getUserByPrincipal(principal);
-        user.setName(userForUpdate.getName());
-        user.setLastname(userForUpdate.getLastname());
-        user.setBio(userForUpdate.getBio());
+        user.setName(userUpdated.getName());
+        user.setLastname(userUpdated.getLastname());
+        user.setBio(userUpdated.getBio());
         return usersRepository.save(user);
     }
     public User getCurrentUser(Principal principal){
