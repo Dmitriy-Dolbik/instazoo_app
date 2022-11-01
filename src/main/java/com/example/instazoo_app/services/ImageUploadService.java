@@ -1,6 +1,8 @@
 package com.example.instazoo_app.services;
 
+import com.example.instazoo_app.exceptions.ImageNotFoundException;
 import com.example.instazoo_app.models.ImageModel;
+import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.repositories.ImagesRepository;
 import com.example.instazoo_app.repositories.PostsRepository;
@@ -16,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
@@ -47,6 +50,41 @@ public class ImageUploadService {
         imageModel.setImageBytes(compressBytes(file.getBytes()));
         imageModel.setName(file.getOriginalFilename());
         return imagesRepository.save(imageModel);
+    }
+    public ImageModel uploadImageToPost(MultipartFile file, Principal principal,
+                                        Long postId) throws IOException{
+        User user = getUserByPrincipal(principal);
+        Post post = user.getPosts()
+                .stream()
+                .filter(p->p.getId().equals(postId))
+                .collect(toSinglePostCollector());
+
+        ImageModel imageModel = new ImageModel();
+        imageModel.setPostId(post.getId());
+       /* imageModel.setImageBytes(file.getBytes());*///скорее всего лишнаяя строчка
+        imageModel.setImageBytes(compressBytes(file.getBytes()));
+        imageModel.setName(file.getOriginalFilename());
+        LOG.info("Uploading image to Post {}", post.getId());
+
+        return imagesRepository.save(imageModel);
+    }
+    public ImageModel getImageToUser(Principal principal){
+        User user = getUserByPrincipal(principal);
+
+        ImageModel imageModel = imagesRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ImageNotFoundException("Cannot find image to User : "+user.getId()));;
+        if (!ObjectUtils.isEmpty(imageModel)){
+            imageModel.setImageBytes(decompressBytes(imageModel.getImageBytes()));
+        }
+        return imageModel;
+    }
+    public ImageModel getImagePost(Long postId){
+        ImageModel imageModel = imagesRepository.findByPostId(postId)
+                .orElseThrow(() -> new ImageNotFoundException("Cannot find image to Post : "+postId));
+        if (!ObjectUtils.isEmpty(imageModel)){
+            imageModel.setImageBytes(decompressBytes(imageModel.getImageBytes()));
+        }
+        return imageModel;
     }
 
     //Перед сохранение будем уменьшать количество битов в файле
@@ -88,9 +126,10 @@ public class ImageUploadService {
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();
         return usersRepository.findUserByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username : " + username));
+                .orElseThrow(() -> new UsernameNotFoundException(
+                        "User not found with username : " + username));
     }
-    private <T> Collector<T, ?, T> toStringPostCollector(){
+    private <T> Collector<T, ?, T> toSinglePostCollector(){
         return Collectors.collectingAndThen(
                 Collectors.toList(),
                 list -> {

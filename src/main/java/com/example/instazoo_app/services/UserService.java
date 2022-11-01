@@ -17,11 +17,11 @@ public class UserService {
     public UserService(UsersRepository usersRepository) {
         this.usersRepository = usersRepository;
     }
-    public User updateUser(UserDTO userDTO, Principal principal){
+    public User updateUser(User userForUpdate, Principal principal){
         User user = getUserByPrincipal(principal);
-        user.setName(userDTO.getName());
-        user.setLastname(userDTO.getLastname());
-        user.setBio(userDTO.getBio());
+        user.setName(userForUpdate.getName());
+        user.setLastname(userForUpdate.getLastname());
+        user.setBio(userForUpdate.getBio());
         return usersRepository.save(user);
     }
     public User getCurrentUser(Principal principal){
@@ -35,6 +35,10 @@ public class UserService {
     }
     public Optional<User> findUserByEmail(String email) {
         return usersRepository.findUserByEmail(email);
+    }
+
+    public User getUserById(Long id) {
+        return usersRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User cannot be found"));
     }
 }
 
