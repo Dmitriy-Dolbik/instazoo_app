@@ -78,7 +78,7 @@ public class ImageUploadService {
         }
         return imageModel;
     }
-    public ImageModel getImagePost(Long postId){
+    public ImageModel getImageToPost(Long postId){
         ImageModel imageModel = imagesRepository.findByPostId(postId)
                 .orElseThrow(() -> new ImageNotFoundException("Cannot find image to Post : "+postId));
         if (!ObjectUtils.isEmpty(imageModel)){

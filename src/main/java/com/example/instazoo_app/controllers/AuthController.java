@@ -74,6 +74,7 @@ public class AuthController {
                                                    SignupRequest signupRequest,
                                                BindingResult bindingResult){
         User user = convertToUser(signupRequest);
+        System.out.println(user);
         userValidator.validate(user,bindingResult);
         if (bindingResult.hasErrors()){
             String errorMsg = createErrorMessageToClient(bindingResult);

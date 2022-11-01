@@ -62,7 +62,7 @@ public class UserController {
         //и отправляем через кастомный Response (по Alishev'у)
         //Проще делается через ResponseErrorValidation, смотри PostController
         //Там мы сразу генерируем map c ошибками и отправляем клиенту
-        //Без Exception'ов и Handler'ов
+        //без Exception'ов и Handler'ов
 
         User userToUpdate = userFacade.convertToUser(userDTO);
         userValidator.validate(userToUpdate, bindingResult);
