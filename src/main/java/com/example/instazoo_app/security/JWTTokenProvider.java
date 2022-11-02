@@ -6,6 +6,9 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.repositories.UsersRepository;
+import io.jsonwebtoken.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -13,41 +16,38 @@ import org.springframework.stereotype.Component;
 
 import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JWTTokenProvider {
-    @Value("${jwt_secret}")
-    private String secret;
-    private final UsersRepository usersRepository;
-    @Autowired
-    public JWTTokenProvider(UsersRepository usersRepository) {
-        this.usersRepository = usersRepository;
-    }
+    public static final Logger LOG = LoggerFactory.getLogger(JWTTokenProvider.class);
 
-    public String generateToken(Authentication authentication){
-        User user = (User) authentication.getPrincipal();//в этом User'e нет name и lastname
-        User userWithAllDetails = usersRepository.findUserById(user.getId()).get();//поэтому создали этот
-        Date expirationDate = Date.from(ZonedDateTime.now().plusMinutes(10).toInstant());
+    public String generateToken(Authentication authentication) {
+        User user = (User) authentication.getPrincipal();
+        Date now = new Date(System.currentTimeMillis());
+        Date expiryDate = new Date(now.getTime() + SecurityConstants.EXPIRATION_TIME);
 
         String userId = Long.toString(user.getId());
-        return JWT.create()
-                .withSubject("User details")
-                .withClaim("id", userId)
-                .withClaim("username", userWithAllDetails.getEmail())
-                .withClaim("name", userWithAllDetails.getName())
-                .withClaim("lastname", userWithAllDetails.getLastname())
-                .withIssuedAt(new Date())
-                .withIssuer("instazoo")
-                .withExpiresAt(expirationDate)
-                .sign(Algorithm.HMAC256(secret));
+
+        Map<String, Object> claimsMap = new HashMap<>();
+        claimsMap.put("id", userId);
+        claimsMap.put("username", user.getEmail());
+
+        return Jwts.builder()
+                .setSubject(userId)
+                .addClaims(claimsMap)
+                .setIssuedAt(now)
+                .setExpiration(expiryDate)
+                .signWith(SignatureAlgorithm.HS512, SecurityConstants.SECRET)
+                .compact();
     }
     public Long getUserIdFromToken(String token) {
-        JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret))
-                .withSubject("User details")
-                .withIssuer("instazoo")
-                .build();
-
-        DecodedJWT jwt = verifier.verify(token);
-        return jwt.getClaim("id").asLong();
+        Claims claims = Jwts.parser()
+                .setSigningKey(SecurityConstants.SECRET)
+                .parseClaimsJws(token)
+                .getBody();
+        String id = (String) claims.get("id");
+        return Long.parseLong(id);
     }
 }

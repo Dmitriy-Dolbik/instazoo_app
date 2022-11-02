@@ -2,6 +2,7 @@ package com.example.instazoo_app.util;
 
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
 
 import java.util.List;
@@ -21,13 +22,13 @@ public class ErrorUtil2 {
             }
         }
         //Указывает поле и ошибку, которая к нему относится
-        /*List<FieldError> fieldErrors = bindingResult.getFieldErrors();
+        List<FieldError> fieldErrors = bindingResult.getFieldErrors();
         for (FieldError error : fieldErrors){
             errorMsg.append(error.getField())
                     .append(" - ")
                     .append(error.getDefaultMessage() == null ? error.getCode():error.getDefaultMessage())
                     .append("; ");
-        }*/
+        }
         return errorMsg.toString();
     }
 }
