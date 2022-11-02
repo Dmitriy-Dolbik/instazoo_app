@@ -21,12 +21,13 @@ import java.util.Map;
 
 @Component
 public class JWTTokenProvider {
+    @Value("${jwt_secret}")
+    private String secret;
     public static final Logger LOG = LoggerFactory.getLogger(JWTTokenProvider.class);
 
     public String generateToken(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        Date now = new Date(System.currentTimeMillis());
-        Date expiryDate = new Date(now.getTime() + SecurityConstants.EXPIRATION_TIME);
+        Date expiryDate = Date.from(ZonedDateTime.now().plusMinutes(10).toInstant());
 
         String userId = Long.toString(user.getId());
 
@@ -37,14 +38,29 @@ public class JWTTokenProvider {
         return Jwts.builder()
                 .setSubject(userId)
                 .addClaims(claimsMap)
-                .setIssuedAt(now)
+                .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
-                .signWith(SignatureAlgorithm.HS512, SecurityConstants.SECRET)
+                .signWith(SignatureAlgorithm.HS512, secret)
                 .compact();
+    }
+    public boolean validateToken(String token) {
+        try {
+            Jwts.parser()
+                    .setSigningKey(secret)
+                    .parseClaimsJws(token);
+            return true;
+        }catch (SignatureException |
+                MalformedJwtException |
+                ExpiredJwtException |
+                UnsupportedJwtException |
+                IllegalArgumentException ex) {
+            LOG.error(ex.getMessage());
+            return false;
+        }
     }
     public Long getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
-                .setSigningKey(SecurityConstants.SECRET)
+                .setSigningKey(secret)
                 .parseClaimsJws(token)
                 .getBody();
         String id = (String) claims.get("id");

@@ -1,6 +1,5 @@
 package com.example.instazoo_app.security;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.services.CustomUserDetailsService;
 import org.slf4j.Logger;
@@ -18,53 +17,49 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
     public static final Logger LOG = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
+
     private final JWTTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
-
     @Autowired
-    public JWTAuthenticationFilter(JWTTokenProvider jwtTokenProvider,
-                                   CustomUserDetailsService customUserDetailsService) {
+    public JWTAuthenticationFilter(JWTTokenProvider jwtTokenProvider, CustomUserDetailsService customUserDetailsService) {
         this.jwtTokenProvider = jwtTokenProvider;
         this.customUserDetailsService = customUserDetailsService;
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, FilterChain filterChain) throws ServletException, IOException {
+        try {
+            String jwt = getJWTFromRequest(httpServletRequest);
+            if (StringUtils.hasText(jwt) && jwtTokenProvider.validateToken(jwt)) {
+                Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
+                User userDetails = customUserDetailsService.loadUserById(userId);
 
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && !authHeader.isBlank() && authHeader.startsWith("Bearer ")) {
-            String jwt = authHeader.substring(7);
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                        userDetails, userDetails.getPassword(), userDetails.getAuthorities()
+                );
 
-            if (jwt.isBlank()) {
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST
-                        , "Invalid JWT Token in Bearer Header");
-            } else {
-                try {
-                    Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
-                    User userDetails = customUserDetailsService.loadUserById(userId);
-
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails
-                                    , userDetails.getPassword()
-                                    , userDetails.getAuthorities());
-
-                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                    }
-                } catch (JWTVerificationException exs) {
-                    LOG.error("Could not ser user authentication");
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST,
-                            "Invalid JWT Token");
+                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
+        } catch (Exception ex) {
+            LOG.error("Could not set user authentication");
+            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    "Invalid JWT Token");
         }
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(httpServletRequest, httpServletResponse);
+    }
+
+    private String getJWTFromRequest(HttpServletRequest request) {
+        String bearToken = request.getHeader(SecurityConstants.HEADER_STRING);
+        if (StringUtils.hasText(bearToken) && bearToken.startsWith(SecurityConstants.TOKEN_PREFIX)) {
+            return bearToken.split(" ")[1];
+        }
+        return null;
     }
 }
