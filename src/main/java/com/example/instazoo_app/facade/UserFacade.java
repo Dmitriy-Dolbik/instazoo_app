@@ -9,16 +9,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserFacade {
     private final ModelMapper modelMapper;
+
     @Autowired
     public UserFacade(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
     }
 
-    public UserDTO convertToUserDTO(User user){
+    public UserDTO convertToUserDTO(User user) {
         return modelMapper.map(user, UserDTO.class);
-    }
-    public User convertToUser(UserDTO userDTO){
-        return modelMapper.map(userDTO, User.class);
     }
 }
 

@@ -14,6 +14,9 @@ public class PostFacade {
         this.modelMapper = modelMapper;
     }
     public PostDTO convertToPostDTO(Post post){
-        return modelMapper.map(post, PostDTO.class);
+        PostDTO postDTO = modelMapper.map(post, PostDTO.class);
+        postDTO.setUsername(post.getUser().getUsername());
+        return postDTO;
     }
+
 }

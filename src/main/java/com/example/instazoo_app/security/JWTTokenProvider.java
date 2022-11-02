@@ -27,7 +27,7 @@ public class JWTTokenProvider {
 
     public String generateToken(Authentication authentication){
         User user = (User) authentication.getPrincipal();
-        Date expirationDate = Date.from(ZonedDateTime.now().plusMinutes(10).toInstant());
+        Date expirationDate = Date.from(ZonedDateTime.now().plusMinutes(30).toInstant());
 
         String userId = Long.toString(user.getId());
         return JWT.create()

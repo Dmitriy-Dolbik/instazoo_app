@@ -12,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -64,17 +65,14 @@ public class UserController {
         //Там мы сразу генерируем map c ошибками и отправляем клиенту
         //без Exception'ов и Handler'ов
 
-        User userToUpdate = userFacade.convertToUser(userDTO);
-        userValidator.validate(userToUpdate, bindingResult);
         if (bindingResult.hasErrors()){
             String errorMsg = createErrorMessageToClient(bindingResult);
             throw new UserWasNotUpdatedException(errorMsg);
         }
+        User user = userService.updateUser(userDTO, principal);
 
-        User userUpdated = userService.updateUser(userToUpdate, principal);
-
-        UserDTO userUpdatedDTO = userFacade.convertToUserDTO(userUpdated);
-        return new ResponseEntity<>(userUpdatedDTO, HttpStatus.OK);
+        UserDTO userUpdated = userFacade.convertToUserDTO(user);
+        return new ResponseEntity<>(userUpdated, HttpStatus.OK);
     }
     @ExceptionHandler
     private ResponseEntity<ErrorResponse> handleException(@NotNull final UserWasNotUpdatedException exc){
