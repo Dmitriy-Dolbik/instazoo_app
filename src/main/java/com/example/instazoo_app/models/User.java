@@ -1,6 +1,6 @@
 package com.example.instazoo_app.models;
 
-import com.example.instazoo_app.models.enums.Role;
+import com.example.instazoo_app.models.enums.ERole;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +8,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -37,7 +36,7 @@ public class User implements UserDetails {
             joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "role_name")
     @Enumerated(EnumType.STRING)
-    private Set<Role> roles = new HashSet<>();
+    private Set<ERole> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
     orphanRemoval = true)
