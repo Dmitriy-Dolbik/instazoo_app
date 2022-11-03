@@ -2,6 +2,7 @@ package com.example.instazoo_app.services;
 
 import com.example.instazoo_app.dto.PostDTO;
 import com.example.instazoo_app.exceptions.PostNotFoundException;
+import com.example.instazoo_app.facade.PostFacade;
 import com.example.instazoo_app.models.ImageModel;
 import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
@@ -25,16 +26,22 @@ public class PostService {
     private final PostsRepository postsRepository;
     private final UsersRepository usersRepository;
     private final ImagesRepository imagesRepository;
+    private final PostFacade postFacade;
 
     @Autowired
-    public PostService(PostsRepository postsRepository, UsersRepository usersRepository, ImagesRepository imagesRepository) {
+    public PostService(PostsRepository postsRepository, UsersRepository usersRepository, ImagesRepository imagesRepository, PostFacade postFacade) {
         this.postsRepository = postsRepository;
         this.usersRepository = usersRepository;
         this.imagesRepository = imagesRepository;
+        this.postFacade = postFacade;
     }
     //Переписать с помощью Mapper'a
     public Post createPost(PostDTO postDTO, Principal principal) {
         User user = getUserByPrincipal(principal);
+        /*Post post = postFacade.convertToPost(postDTO);
+        post.setUser(user);
+        post.setLikes(0);*/
+
         Post post = new Post();
         post.setUser(user);
         post.setCaption(postDTO.getCaption());
