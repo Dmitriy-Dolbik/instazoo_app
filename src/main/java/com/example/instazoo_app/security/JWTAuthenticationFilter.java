@@ -57,7 +57,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                     }
                 } catch (JWTVerificationException exs) {
                     LOG.error("Could not set user authentication");
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
                             "Invalid JWT Token");
                 }
             }
