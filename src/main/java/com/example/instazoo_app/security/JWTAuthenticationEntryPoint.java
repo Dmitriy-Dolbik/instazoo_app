@@ -1,5 +1,6 @@
 package com.example.instazoo_app.security;
 
+import com.example.instazoo_app.payload.response.InvalidLoginResponse;
 import com.google.gson.Gson;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
@@ -11,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-/*@Component
+@Component
 public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
@@ -23,4 +24,4 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.getWriter().println(jsonLoginResponse);
     }
-}*/
+}
