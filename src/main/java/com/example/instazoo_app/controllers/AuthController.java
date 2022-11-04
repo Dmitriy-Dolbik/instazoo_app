@@ -1,7 +1,6 @@
 package com.example.instazoo_app.controllers;
 
-import com.example.instazoo_app.exceptions.SinginException;
-import com.example.instazoo_app.exceptions.SignupException;
+import com.example.instazoo_app.exceptions.AuthException;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.payload.response.AuthErrorResponse;
 import com.example.instazoo_app.payload.response.JWTTokenSuccessResponse;
@@ -55,7 +54,7 @@ public class AuthController {
                                                    BindingResult bindingResult){
         if (bindingResult.hasErrors()){
             String errorMsg = createErrorMessageToClient(bindingResult);
-            throw new SinginException(errorMsg);
+            throw new AuthException(errorMsg);
         }
         UsernamePasswordAuthenticationToken authToken =
                 new UsernamePasswordAuthenticationToken(
@@ -67,7 +66,7 @@ public class AuthController {
             String jwt = SecurityConstants.TOKEN_PREFIX+jwtTokenProvider.generateToken(authentication);
             return ResponseEntity.ok(new JWTTokenSuccessResponse(true, jwt));
         }catch(BadCredentialsException exc){
-            throw new SinginException("Incorrect credentials");
+            throw new AuthException("Incorrect credentials");
         }
     }
     @PostMapping("/signup")
@@ -78,7 +77,7 @@ public class AuthController {
         userValidator.validate(user,bindingResult);
         if (bindingResult.hasErrors()){
             String errorMsg = createErrorMessageToClient(bindingResult);
-            throw new SignupException(errorMsg);
+            throw new AuthException(errorMsg);
         }
         registrationService.register(user);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
@@ -87,16 +86,8 @@ public class AuthController {
         return modelMapper.map(signupRequest, User.class);
     }
     @ExceptionHandler
-    private ResponseEntity<AuthErrorResponse> handleException(@NotNull final SinginException exc){
-        AuthErrorResponse response = new AuthErrorResponse(exc.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-    }
-    @ExceptionHandler
-    private ResponseEntity<AuthErrorResponse> handleException(@NotNull final SignupException exc){
+    private ResponseEntity<AuthErrorResponse> handleException(@NotNull final AuthException exc){
         AuthErrorResponse response = new AuthErrorResponse(exc.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
-
-
-
 }

@@ -16,7 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Collections;
 
 @Component
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
@@ -35,33 +34,36 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && !authHeader.isBlank() && authHeader.startsWith("Bearer ")) {
-            String jwt = authHeader.substring(7);
-
-            if (jwt.isBlank()) {
+            /*if (jwt.isBlank()) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED
                         , "Invalid JWT Token in Bearer Header");
-            } else {
-                try {
-                    Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
-                    User userDetails = customUserDetailsService.loadUserById(userId);
+            } else {*/
+        try {
+            String jwt = getJWTFromRequest(request);
+            if (!jwt.isBlank()) {
+                Long userId = jwtTokenProvider.getUserIdFromToken(jwt);
+                User userDetails = customUserDetailsService.loadUserById(userId);
 
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(
-                                    userDetails
-                                    , userDetails.getPassword()
-                                    , userDetails.getAuthorities());
-                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
-                    }
-                } catch (JWTVerificationException exs) {
-                    LOG.error("Could not set user authentication");
-                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
-                            "Invalid JWT Token");
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails
+                                , userDetails.getPassword()
+                                , userDetails.getAuthorities());
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
+        } catch (
+                Exception exs) {
+            LOG.error("Could not set user authentication");
         }
         filterChain.doFilter(request, response);
+    }
+    private String getJWTFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && !authHeader.isBlank() && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
     }
 }
