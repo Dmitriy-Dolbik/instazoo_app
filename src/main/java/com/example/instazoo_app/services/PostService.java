@@ -47,7 +47,7 @@ public class PostService {
         post.setCaption(postDTO.getCaption());
         post.setLocation(postDTO.getLocation());
         post.setTitle(postDTO.getTitle());
-        post.setLikes(0);
+        post.setLikes(0L);
         LOG.info("Saving Post for User: {}", user.getEmail());
         return postsRepository.save(post);
     }
@@ -64,20 +64,21 @@ public class PostService {
         User user = getUserByPrincipal(principal);
         return postsRepository.findAllByUserOrderByCreatedDateDesc(user);
     }
-    public Post likePost(Long postId, String username) {
+    public Post likePost(Long postId, Long userId) {
         Post post = postsRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException("Post cannot be found"));
 
-        Optional<String> userLiked = post.getLikedUsers()
+        Optional<Long> userLiked = post.getLikedUsers()
                 .stream()
-                .filter(u -> u.equals(username)).findAny();
+                .filter(id -> id.equals(userId)).findAny();
 
+        Long likesCount = postsRepository.determineLikesCount(postId);
         if (userLiked.isPresent()) {
-            post.setLikes(post.getLikes() - 1);
-            post.getLikedUsers().remove(username);
+            post.setLikes(likesCount - 1);
+            post.getLikedUsers().remove(userId);
         } else {
-            post.setLikes(post.getLikes() + 1);
-            post.getLikedUsers().add(username);
+            post.setLikes(likesCount + 1);
+            post.getLikedUsers().add(userId);
         }
         return postsRepository.save(post);
     }

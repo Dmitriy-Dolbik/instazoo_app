@@ -3,12 +3,14 @@ package com.example.instazoo_app.controllers;
 import com.example.instazoo_app.dto.PostDTO;
 import com.example.instazoo_app.facade.PostFacade;
 import com.example.instazoo_app.models.Post;
+import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.payload.response.MessageResponse;
 import com.example.instazoo_app.services.PostService;
 import com.example.instazoo_app.validations.ResponseErrorValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +21,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("api/post")
+@RequestMapping("/api/post")
 @CrossOrigin
 public class PostController {
     private final PostFacade postFacade;
@@ -60,10 +62,10 @@ public class PostController {
 
         return new ResponseEntity<>(postDTOList, HttpStatus.OK);
     }
-    @PostMapping("/{postId}/{username}/like")
-    public ResponseEntity<PostDTO> likePost(@PathVariable("postId") Long postId,
-                                            @PathVariable("username") String username){
-        Post post = postService.likePost(postId, username);
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<PostDTO> likePost(@PathVariable("postId") Long postId){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Post post = postService.likePost(postId, user.getId());
         PostDTO postDTO = postFacade.convertToPostDTO(post);
 
         return new ResponseEntity<>(postDTO, HttpStatus.OK);

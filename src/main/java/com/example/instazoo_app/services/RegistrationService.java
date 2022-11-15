@@ -3,7 +3,7 @@ package com.example.instazoo_app.services;
 import com.example.instazoo_app.exceptions.UserExistException;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.repositories.UsersRepository;
-import com.example.instazoo_app.models.enums.ERole;
+import com.example.instazoo_app.models.enums.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,7 +22,7 @@ public class RegistrationService {
     public void register(User userIn){
         String encodedPassword = passwordEncoder.encode(userIn.getPassword());
         userIn.setPassword(encodedPassword);
-        userIn.getRoles().add(ERole.ROLE_USER);
+        userIn.getRoles().add(Role.ROLE_USER);
         try {
             LOG.info("Saving User {}", userIn.getEmail());
             usersRepository.save(userIn);

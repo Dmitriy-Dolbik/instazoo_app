@@ -39,7 +39,7 @@ public class UserController {
         this.modelMapper = modelMapper;
         this.userValidator = userValidator;
     }
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<UserDTO> getCurrentUser(Principal principal){
         User user = userService.getCurrentUser(principal);
         UserDTO userDTO = userFacade.convertToUserDTO(user);

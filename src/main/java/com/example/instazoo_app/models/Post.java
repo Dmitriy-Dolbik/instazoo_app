@@ -18,14 +18,13 @@ public class Post {
     private String title;
     private String caption;
     private String location;
-    private Integer likes;
+    private Long likes;
 
     @ElementCollection
-    private Set<String> likedUsers = new HashSet<>();
+    private Set<Long> likedUsers = new HashSet<>();
     @ManyToOne
     private User user;
-    @OneToMany(mappedBy = "post", cascade=CascadeType.REFRESH,
-            fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade=CascadeType.REFRESH, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
     @Column(updatable = false)
     private LocalDateTime createdDate;
