@@ -38,16 +38,11 @@ public class PostService {
     //Переписать с помощью Mapper'a
     public Post createPost(PostDTO postDTO, Principal principal) {
         User user = getUserByPrincipal(principal);
-        /*Post post = postFacade.convertToPost(postDTO);
-        post.setUser(user);
-        post.setLikes(0);*/
-
         Post post = new Post();
         post.setUser(user);
         post.setCaption(postDTO.getCaption());
         post.setLocation(postDTO.getLocation());
         post.setTitle(postDTO.getTitle());
-        post.setLikes(0L);
         LOG.info("Saving Post for User: {}", user.getEmail());
         return postsRepository.save(post);
     }
@@ -72,12 +67,9 @@ public class PostService {
                 .stream()
                 .filter(id -> id.equals(userId)).findAny();
 
-        Long likesCount = postsRepository.determineLikesCount(postId);
         if (userLiked.isPresent()) {
-            post.setLikes(likesCount - 1);
             post.getLikedUsers().remove(userId);
         } else {
-            post.setLikes(likesCount + 1);
             post.getLikedUsers().add(userId);
         }
         return postsRepository.save(post);

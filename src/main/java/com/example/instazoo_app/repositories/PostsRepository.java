@@ -2,7 +2,6 @@ package com.example.instazoo_app.repositories;
 
 import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
-import org.hibernate.annotations.Formula;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -26,8 +25,9 @@ public interface PostsRepository extends JpaRepository<Post, Long> {
     @EntityGraph(attributePaths = {"likedUsers"})
     Optional<Post> findById(Long id);
 
-    @Query("SELECT COUNT(p.id) FROM Post p WHERE p.id=:postId")
-    Long determineLikesCount(@Param("postId") Long postId);
+    @Query(value = "SELECT COUNT(p.post_id) FROM post_liked_users p WHERE p.post_id=:postId",
+            nativeQuery = true)
+    Long countLikes(@Param("postId") Long postId);
 }
 
 

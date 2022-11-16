@@ -17,18 +17,19 @@ import java.util.*;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false)
     private String name;
-    @Column(unique = true, updatable = false)
+    @Column(name = "username", unique = true, updatable = false)
     private String username;
-    @Column(nullable = false)
+    @Column(name = "lastname", nullable = false)
     private String lastname;
-    @Column(unique = true)
+    @Column(name = "email", unique = true)
     private String email;
-    @Column(columnDefinition = "text")
+    @Column(name = "bio", columnDefinition = "text")
     private String bio;
-    @Column(length = 3000)
+    @Column(name = "password", length = 3000)
     private String password;
 
     @ElementCollection

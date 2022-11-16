@@ -14,11 +14,14 @@ import java.util.Set;
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     private Long id;
+    @Column(name = "title")
     private String title;
+    @Column(name = "caption")
     private String caption;
+    @Column(name = "location")
     private String location;
-    private Long likes;
 
     @ElementCollection
     private Set<Long> likedUsers = new HashSet<>();
@@ -26,7 +29,7 @@ public class Post {
     private User user;
     @OneToMany(mappedBy = "post", cascade=CascadeType.REFRESH, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
-    @Column(updatable = false)
+    @Column(name = "created_date", updatable = false)
     private LocalDateTime createdDate;
 
     @PrePersist

@@ -11,6 +11,6 @@ public class PostDTO {
     private String caption;
     private String location;
     private String username;
-    private Integer likes;
+    private Long likes;
     private Set<String> likedUsers;
 }
