@@ -2,7 +2,7 @@ package com.example.instazoo_app.controllers;
 
 import com.example.instazoo_app.exceptions.AuthException;
 import com.example.instazoo_app.models.User;
-import com.example.instazoo_app.payload.response.AuthErrorResponse;
+import com.example.instazoo_app.exceptions.ErrorResponse;
 import com.example.instazoo_app.payload.response.JWTTokenSuccessResponse;
 import com.example.instazoo_app.payload.response.MessageResponse;
 import com.example.instazoo_app.payload.resquest.LoginRequest;
@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import static com.example.instazoo_app.util.ErrorUtil2.createErrorMessageToClient;
+import static com.example.instazoo_app.util.ErrorUtil.createErrorMessageToClient;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -86,8 +86,8 @@ public class AuthController {
         return modelMapper.map(signupRequest, User.class);
     }
     @ExceptionHandler
-    private ResponseEntity<AuthErrorResponse> handleException(@NotNull final AuthException exc){
-        AuthErrorResponse response = new AuthErrorResponse(exc.getMessage());
+    private ResponseEntity<ErrorResponse> handleException(@NotNull final AuthException exc){
+        ErrorResponse response = new ErrorResponse(exc.getMessage());
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

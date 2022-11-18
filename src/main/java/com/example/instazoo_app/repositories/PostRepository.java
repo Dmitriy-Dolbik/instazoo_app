@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface PostsRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long> {
 
 
     List<Post> findAllByUserOrderByCreatedDateDesc(User user);

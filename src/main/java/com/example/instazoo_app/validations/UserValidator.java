@@ -28,7 +28,7 @@ public class UserValidator implements Validator {
         }
         User user2 = (User) target;
         if (userService.findUserByUsername(user2.getUsername()).isPresent()){
-            errors.rejectValue("email", "", "User with this username already exists");
+            errors.rejectValue("username", "", "User with this username already exists");
         }
     }
 }

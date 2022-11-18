@@ -2,7 +2,7 @@ package com.example.instazoo_app.services;
 
 import com.example.instazoo_app.dto.UserDTO;
 import com.example.instazoo_app.models.User;
-import com.example.instazoo_app.repositories.UsersRepository;
+import com.example.instazoo_app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -12,43 +12,37 @@ import java.util.Optional;
 
 @Service
 public class UserService {
-    private final UsersRepository usersRepository;
+    private final UserRepository userRepository;
     @Autowired
-    public UserService(UsersRepository usersRepository) {
-        this.usersRepository = usersRepository;
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
     public User updateUser(UserDTO userDTO, Principal principal){
         User user = getUserByPrincipal(principal);
         user.setName(userDTO.getName());
         user.setLastname(userDTO.getLastname());
         user.setBio(userDTO.getBio());
-        return usersRepository.save(user);
+        return userRepository.save(user);
     }
-    /*public User updateUser(UserDTO userDTO, Principal principal){
-        User user = getUserByPrincipal(principal);
-        user.setName(userDTO.getName());
-        user.setLastname(userDTO.getLastname());
-        user.setBio(userDTO.getBio());
-        return usersRepository.save(user);
-    }*/
     public User getCurrentUser(Principal principal){
         return getUserByPrincipal(principal);
     }
     private User getUserByPrincipal(Principal principal){
         String username = principal.getName();
-        return usersRepository.findUserByUsername(username)
+        return userRepository.findUserByUsername(username)
                 .orElseThrow(()->new UsernameNotFoundException(
                         "Username not found with username : "+username));
     }
     public Optional<User> findUserByEmail(String email) {
-        return usersRepository.findUserByEmail(email);
+
+        return userRepository.findUserByEmail(email);
     }
 
     public User getUserById(Long id) {
-        return usersRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User cannot be found"));
+        return userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User cannot be found"));
     }
     public Optional<User> findUserByUsername(String username){
-        return usersRepository.findUserByUsername(username);
+        return userRepository.findUserByUsername(username);
     }
 }
 

@@ -17,7 +17,7 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException authException)
-            throws IOException, ServletException {
+            throws IOException {
         InvalidLoginResponse loginResponse = new InvalidLoginResponse();
         String jsonLoginResponse = new Gson().toJson(loginResponse);
         response.setContentType(SecurityConstants.CONTENT_TYPE);

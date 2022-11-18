@@ -1,10 +1,10 @@
 package com.example.instazoo_app.controllers;
 
 import com.example.instazoo_app.dto.UserDTO;
-import com.example.instazoo_app.exceptions.UserWasNotUpdatedException;
+import com.example.instazoo_app.exceptions.InvalidRequestValuesException;
 import com.example.instazoo_app.facade.UserFacade;
 import com.example.instazoo_app.models.User;
-import com.example.instazoo_app.payload.response.ErrorResponse;
+import com.example.instazoo_app.exceptions.ErrorResponse;
 import com.example.instazoo_app.services.UserService;
 import com.example.instazoo_app.validations.ResponseErrorValidation;
 import com.example.instazoo_app.validations.UserValidator;
@@ -12,7 +12,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.ObjectUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +19,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.security.Principal;
 
-import static com.example.instazoo_app.util.ErrorUtil2.createErrorMessageToClient;
+import static com.example.instazoo_app.util.ErrorUtil.createErrorMessageToClient;
 
 @RestController
 @RequestMapping("api/user")
@@ -57,27 +56,15 @@ public class UserController {
     public ResponseEntity<Object> updateUser(@Valid @RequestBody UserDTO userDTO,
                                              BindingResult bindingResult,
                                              Principal principal) {
-
-        //Создали специальный класс для генерации сообщения об ошибке,
-        //сообщение кладём в кастомный Exception, ловим Exception Handler'ом
-        //и отправляем через кастомный Response (по Alishev'у)
-        //Проще делается через ResponseErrorValidation, смотри PostController
-        //Там мы сразу генерируем map c ошибками и отправляем клиенту
-        //без Exception'ов и Handler'ов
-
         if (bindingResult.hasErrors()){
             String errorMsg = createErrorMessageToClient(bindingResult);
-            throw new UserWasNotUpdatedException(errorMsg);
+            throw new InvalidRequestValuesException(errorMsg);
         }
         User user = userService.updateUser(userDTO, principal);
 
         UserDTO userUpdated = userFacade.convertToUserDTO(user);
         return new ResponseEntity<>(userUpdated, HttpStatus.OK);
     }
-    @ExceptionHandler
-    private ResponseEntity<ErrorResponse> handleException(@NotNull final UserWasNotUpdatedException exc){
-        ErrorResponse response = new ErrorResponse(exc.getMessage());
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
+
 
 }

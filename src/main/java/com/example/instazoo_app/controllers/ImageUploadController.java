@@ -1,6 +1,6 @@
 package com.example.instazoo_app.controllers;
 
-import com.example.instazoo_app.models.ImageModel;
+import com.example.instazoo_app.models.Attachment;
 import com.example.instazoo_app.payload.response.MessageResponse;
 import com.example.instazoo_app.services.ImageUploadService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +35,13 @@ public class ImageUploadController {
         return ResponseEntity.ok(new MessageResponse("Image uploaded successfully"));
     }
     @GetMapping("/profileImage")
-    public ResponseEntity<ImageModel> getImageForUser(Principal principal){
-        ImageModel userImage = imageUploadService.getImageToUser(principal);
+    public ResponseEntity<Attachment> getImageForUser(Principal principal){
+        Attachment userImage = imageUploadService.getImageToUser(principal);
         return new ResponseEntity<>(userImage, HttpStatus.OK);
     }
     @GetMapping("/{postId}/image")
-    public ResponseEntity<ImageModel> getImageToPost(@PathVariable("postId") Long postId){
-        ImageModel postImage = imageUploadService.getImageToPost(postId);
+    public ResponseEntity<Attachment> getImageToPost(@PathVariable("postId") Long postId){
+        Attachment postImage = imageUploadService.getImageToPost(postId);
         return new ResponseEntity<>(postImage, HttpStatus.OK);
     }
 

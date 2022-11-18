@@ -1,14 +1,14 @@
 package com.example.instazoo_app.services;
 
 import com.example.instazoo_app.dto.PostDTO;
-import com.example.instazoo_app.exceptions.PostNotFoundException;
+import com.example.instazoo_app.exceptions.NotFoundException;
 import com.example.instazoo_app.facade.PostFacade;
-import com.example.instazoo_app.models.ImageModel;
+import com.example.instazoo_app.models.Attachment;
 import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
-import com.example.instazoo_app.repositories.ImagesRepository;
-import com.example.instazoo_app.repositories.PostsRepository;
-import com.example.instazoo_app.repositories.UsersRepository;
+import com.example.instazoo_app.repositories.ImageRepository;
+import com.example.instazoo_app.repositories.PostRepository;
+import com.example.instazoo_app.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,18 +23,26 @@ import java.util.Optional;
 public class PostService {
     public static final Logger LOG = LoggerFactory.getLogger(PostService.class);
 
-    private final PostsRepository postsRepository;
-    private final UsersRepository usersRepository;
-    private final ImagesRepository imagesRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final ImageRepository imageRepository;
     private final PostFacade postFacade;
 
     @Autowired
-    public PostService(PostsRepository postsRepository, UsersRepository usersRepository, ImagesRepository imagesRepository, PostFacade postFacade) {
-        this.postsRepository = postsRepository;
-        this.usersRepository = usersRepository;
-        this.imagesRepository = imagesRepository;
+    public PostService(PostRepository postRepository, UserRepository userRepository, ImageRepository imageRepository, PostFacade postFacade) {
+        this.postRepository = postRepository;
+        this.userRepository = userRepository;
+        this.imageRepository = imageRepository;
         this.postFacade = postFacade;
     }
+
+    public Post getPostById(Long postId, Principal principal) {
+        User user = getUserByPrincipal(principal);
+        return postRepository.findPostByIdAndUser(postId, user)
+                .orElseThrow(() -> new NotFoundException(
+                        "Post cannot be found for username: " + user.getEmail()));
+    }
+
     //Переписать с помощью Mapper'a
     public Post createPost(PostDTO postDTO, Principal principal) {
         User user = getUserByPrincipal(principal);
@@ -44,24 +52,21 @@ public class PostService {
         post.setLocation(postDTO.getLocation());
         post.setTitle(postDTO.getTitle());
         LOG.info("Saving Post for User: {}", user.getEmail());
-        return postsRepository.save(post);
+        return postRepository.save(post);
     }
+
     public List<Post> getAllPosts() {
-        return postsRepository.findAllByOrderByCreatedDateDesc();
+        return postRepository.findAllByOrderByCreatedDateDesc();
     }
-    public Post getPostById(Long postId, Principal principal) {
-        User user = getUserByPrincipal(principal);
-        return postsRepository.findPostByIdAndUser(postId, user)
-                .orElseThrow(() -> new PostNotFoundException(
-                        "Post cannot be found for username: " + user.getEmail()));
-    }
+
     public List<Post> getAllPostForUser(Principal principal) {
         User user = getUserByPrincipal(principal);
-        return postsRepository.findAllByUserOrderByCreatedDateDesc(user);
+        return postRepository.findAllByUserOrderByCreatedDateDesc(user);
     }
+
     public Post likePost(Long postId, Long userId) {
-        Post post = postsRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException("Post cannot be found"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("Post cannot be found"));
 
         Optional<Long> userLiked = post.getLikedUsers()
                 .stream()
@@ -72,17 +77,19 @@ public class PostService {
         } else {
             post.getLikedUsers().add(userId);
         }
-        return postsRepository.save(post);
+        return postRepository.save(post);
     }
+
     public void deletePost(Long postId, Principal principal) {
         Post post = getPostById(postId, principal);
-        Optional<ImageModel> imageModel = imagesRepository.findByPostId(post.getId());
-        postsRepository.delete(post);
-        imageModel.ifPresent((imagesRepository::delete));
+        Optional<Attachment> imageModel = imageRepository.findByPostId(post.getId());
+        postRepository.delete(post);
+        imageModel.ifPresent((imageRepository::delete));
     }
+
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();
-        return usersRepository.findUserByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with username : " + username));
+        return userRepository.findUserByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found with username : " + username));
     }
 }

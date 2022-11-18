@@ -2,6 +2,7 @@ package com.example.instazoo_app.models;
 
 import com.example.instazoo_app.models.enums.Role;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
@@ -17,20 +18,26 @@ import java.util.*;
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
-    @Column(name = "name", nullable = false)
+    @Column(nullable = false)
     private String name;
-    @Column(name = "username", unique = true, updatable = false)
+    @Column(unique = true, updatable = false)
     private String username;
-    @Column(name = "lastname", nullable = false)
+    @Column(nullable = false)
     private String lastname;
-    @Column(name = "email", unique = true)
+    @Column(unique = true)
     private String email;
-    @Column(name = "bio", columnDefinition = "text")
+    @Column(columnDefinition = "text")
     private String bio;
-    @Column(name = "password", length = 3000)
+    @Column(length = 3000)
     private String password;
+
+    public User(Long id, String name, String username, String lastname) {
+        this.id = id;
+        this.name = name;
+        this.username = username;
+        this.lastname = lastname;
+    }
 
     @ElementCollection
     @CollectionTable(name = "user_role",

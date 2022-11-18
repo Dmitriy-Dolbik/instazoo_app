@@ -6,7 +6,7 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.instazoo_app.models.User;
-import com.example.instazoo_app.repositories.UsersRepository;
+import com.example.instazoo_app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -19,10 +19,10 @@ import java.util.Date;
 public class JWTTokenProvider {
     @Value("${jwt_secret}")
     private String secret;
-    private final UsersRepository usersRepository;
+    private final UserRepository userRepository;
     @Autowired
-    public JWTTokenProvider(UsersRepository usersRepository) {
-        this.usersRepository = usersRepository;
+    public JWTTokenProvider(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     public String generateToken(Authentication authentication){

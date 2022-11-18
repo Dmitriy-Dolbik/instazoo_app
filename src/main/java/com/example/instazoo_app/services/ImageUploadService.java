@@ -1,24 +1,26 @@
 package com.example.instazoo_app.services;
 
-import com.example.instazoo_app.exceptions.ImageNotFoundException;
-import com.example.instazoo_app.models.ImageModel;
+import com.example.instazoo_app.exceptions.NotFoundException;
+import com.example.instazoo_app.models.Attachment;
 import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
-import com.example.instazoo_app.repositories.ImagesRepository;
-import com.example.instazoo_app.repositories.PostsRepository;
-import com.example.instazoo_app.repositories.UsersRepository;
+import com.example.instazoo_app.repositories.ImageRepository;
+import com.example.instazoo_app.repositories.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.security.Principal;
-import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
@@ -27,63 +29,91 @@ import java.util.zip.Inflater;
 
 @Service
 public class ImageUploadService {
+    @Value("${file.storage}")
+    private String filePath;
     public static final Logger LOG = LoggerFactory.getLogger(ImageUploadService.class);
-    private final ImagesRepository imagesRepository;
-    private final UsersRepository usersRepository;
-    private final PostsRepository postsRepository;
+    private final ImageRepository imageRepository;
+    private final UserRepository userRepository;
+
     @Autowired
-    public ImageUploadService(ImagesRepository imagesRepository, UsersRepository usersRepository, PostsRepository postsRepository) {
-        this.imagesRepository = imagesRepository;
-        this.usersRepository = usersRepository;
-        this.postsRepository = postsRepository;
+    public ImageUploadService(ImageRepository imageRepository, UserRepository userRepository) {
+        this.imageRepository = imageRepository;
+        this.userRepository = userRepository;
     }
-    public ImageModel uploadImageToUser(MultipartFile file, Principal principal) throws IOException{
+
+    private String saveFileToServer(byte[] bytes) {
+        String fileName = UUID.randomUUID().toString();
+        File file = new File(filePath + fileName);
+        try {
+            Files.write(file.toPath(), compressBytes(bytes));
+            return fileName;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private byte[] getFileFromServer(String serverFileName) {
+        File file = new File(filePath + serverFileName);
+        try {
+            return decompressBytes(Files.readAllBytes(file.toPath()));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public Attachment uploadImageToUser(MultipartFile file, Principal principal) throws IOException {
         User user = getUserByPrincipal(principal);
         LOG.info("Uploading image profile to User {}", user.getUsername());
 
-        ImageModel userProfileImage = imagesRepository.findByUserId(user.getId()).orElse(null);
-        if (!ObjectUtils.isEmpty(userProfileImage)){
-            imagesRepository.delete(userProfileImage);
+        Attachment userProfileImage = imageRepository.findByUserId(user.getId()).orElse(null);
+        if (!ObjectUtils.isEmpty(userProfileImage)) {
+            imageRepository.delete(userProfileImage);
         }
-        ImageModel imageModel = new ImageModel();
-        imageModel.setUserId(user.getId());
-        imageModel.setImageBytes(compressBytes(file.getBytes()));
-        imageModel.setName(file.getOriginalFilename());
-        return imagesRepository.save(imageModel);
+        Attachment attachment = new Attachment();
+        attachment.setUserId(user.getId());
+        String fileName = saveFileToServer(file.getBytes());
+        attachment.setServerFileName(fileName);
+        attachment.setImageBytes(compressBytes(file.getBytes()));
+        attachment.setName(file.getOriginalFilename());
+        return imageRepository.save(attachment);
     }
-    public ImageModel uploadImageToPost(MultipartFile file, Principal principal,
-                                        Long postId) throws IOException{
+
+    public Attachment uploadImageToPost(MultipartFile file, Principal principal,
+                                        Long postId) throws IOException {
         User user = getUserByPrincipal(principal);
         Post post = user.getPosts()
                 .stream()
-                .filter(p->p.getId().equals(postId))
+                .filter(p -> p.getId().equals(postId))
                 .collect(toSinglePostCollector());
 
-        ImageModel imageModel = new ImageModel();
-        imageModel.setPostId(post.getId());
-        imageModel.setImageBytes(compressBytes(file.getBytes()));
-        imageModel.setName(file.getOriginalFilename());
+        Attachment attachment = new Attachment();
+        attachment.setPostId(post.getId());
+        String fileName = saveFileToServer(file.getBytes());
+        attachment.setServerFileName(fileName);
+        attachment.setName(file.getOriginalFilename());
         LOG.info("Uploading image to Post {}", post.getId());
 
-        return imagesRepository.save(imageModel);
+        return imageRepository.save(attachment);
     }
-    public ImageModel getImageToUser(Principal principal){
+
+    public Attachment getImageToUser(Principal principal) {
         User user = getUserByPrincipal(principal);
 
-        ImageModel imageModel = imagesRepository.findByUserId(user.getId())
-                .orElseThrow(() -> new ImageNotFoundException("Cannot find image to User : "+user.getId()));;
-        if (!ObjectUtils.isEmpty(imageModel)){
-            imageModel.setImageBytes(decompressBytes(imageModel.getImageBytes()));
+        Attachment attachment = imageRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NotFoundException("Cannot find image to User : " + user.getId()));
+        if (!ObjectUtils.isEmpty(attachment) && attachment.getServerFileName() != null) {
+            attachment.setImageBytes(getFileFromServer(attachment.getServerFileName()));
         }
-        return imageModel;
+        return attachment;
     }
-    public ImageModel getImageToPost(Long postId){
-        ImageModel imageModel = imagesRepository.findByPostId(postId)
-                .orElseThrow(() -> new ImageNotFoundException("Cannot find image to Post : "+postId));
-        if (!ObjectUtils.isEmpty(imageModel)){
-            imageModel.setImageBytes(decompressBytes(imageModel.getImageBytes()));
+
+    public Attachment getImageToPost(Long postId) {
+        Attachment attachment = imageRepository.findByPostId(postId)
+                .orElseThrow(() -> new NotFoundException("Cannot find image to Post : " + postId));
+        if (!ObjectUtils.isEmpty(attachment)) {
+            attachment.setImageBytes(getFileFromServer(attachment.getServerFileName()));
         }
-        return imageModel;
+        return attachment;
     }
 
     //Перед сохранение будем уменьшать количество битов в файле
@@ -105,6 +135,7 @@ public class ImageUploadService {
         System.out.println("Compressed Image Byte Size - " + outputStream.toByteArray().length);
         return outputStream.toByteArray();
     }
+
     //Перед сохранение будем восстанавливать количество битов в файле
     private static byte[] decompressBytes(byte[] data) {
         Inflater inflater = new Inflater();
@@ -122,17 +153,19 @@ public class ImageUploadService {
         }
         return outputStream.toByteArray();
     }
+
     private User getUserByPrincipal(Principal principal) {
         String username = principal.getName();
-        return usersRepository.findUserByUsername(username)
+        return userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException(
                         "User not found with username : " + username));
     }
-    private <T> Collector<T, ?, T> toSinglePostCollector(){
+
+    private <T> Collector<T, ?, T> toSinglePostCollector() {
         return Collectors.collectingAndThen(
                 Collectors.toList(),
                 list -> {
-                    if (list.size() != 1){
+                    if (list.size() != 1) {
                         throw new IllegalStateException();
                     }
                     return list.get(0);

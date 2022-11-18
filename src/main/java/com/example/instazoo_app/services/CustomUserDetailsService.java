@@ -1,7 +1,7 @@
 package com.example.instazoo_app.services;
 
 import com.example.instazoo_app.models.User;
-import com.example.instazoo_app.repositories.UsersRepository;
+import com.example.instazoo_app.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -15,20 +15,20 @@ import java.util.stream.Collectors;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
-    private final UsersRepository usersRepository;
+    private final UserRepository userRepository;
     @Autowired
-    public CustomUserDetailsService(UsersRepository usersRepository) {
-        this.usersRepository = usersRepository;
+    public CustomUserDetailsService(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
     @Override
     public UserDetails loadUserByUsername(String username) {
-        User user = usersRepository.findUserByEmail(username)
+        User user = userRepository.findUserByEmail(username)
                 .orElseThrow(()->new UsernameNotFoundException
                         ("User not found with username: " + username));
         return build(user);
     }
     public User loadUserById(Long id){
-        return usersRepository.findUserById(id).orElse(null);
+        return userRepository.findUserById(id).orElse(null);
     }
     public static User build(User user){
         List<GrantedAuthority> authorities = user.getRoles().stream()

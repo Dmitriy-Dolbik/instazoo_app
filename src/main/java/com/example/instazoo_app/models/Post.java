@@ -1,6 +1,7 @@
 package com.example.instazoo_app.models;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -11,17 +12,21 @@ import java.util.Set;
 
 @Data
 @Entity
+@NoArgsConstructor
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
     private Long id;
-    @Column(name = "title")
     private String title;
-    @Column(name = "caption")
     private String caption;
-    @Column(name = "location")
     private String location;
+
+    public Post(Long id, String title, String caption, String location) {
+        this.id = id;
+        this.title = title;
+        this.caption = caption;
+        this.location = location;
+    }
 
     @ElementCollection
     private Set<Long> likedUsers = new HashSet<>();
@@ -29,7 +34,7 @@ public class Post {
     private User user;
     @OneToMany(mappedBy = "post", cascade=CascadeType.REFRESH, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
-    @Column(name = "created_date", updatable = false)
+    @Column(updatable = false)
     private LocalDateTime createdDate;
 
     @PrePersist
