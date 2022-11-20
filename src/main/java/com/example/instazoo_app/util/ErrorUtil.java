@@ -21,14 +21,6 @@ public class ErrorUtil {
                         .append("; ");
             }
         }
-        //Указывает поле и ошибку, которая к нему относится
-        /*List<FieldError> fieldErrors = bindingResult.getFieldErrors();
-        for (FieldError error : fieldErrors){
-            errorMsg.append(error.getField())
-                    .append(" - ")
-                    .append(error.getDefaultMessage() == null ? error.getCode():error.getDefaultMessage())
-                    .append("; ");
-        }*/
         return errorMsg.toString();
     }
 }

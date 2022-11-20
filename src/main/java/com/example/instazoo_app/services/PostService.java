@@ -2,17 +2,15 @@ package com.example.instazoo_app.services;
 
 import com.example.instazoo_app.dto.PostDTO;
 import com.example.instazoo_app.exceptions.NotFoundException;
-import com.example.instazoo_app.facade.PostFacade;
 import com.example.instazoo_app.models.Attachment;
 import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.repositories.ImageRepository;
 import com.example.instazoo_app.repositories.PostRepository;
 import com.example.instazoo_app.repositories.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
@@ -20,21 +18,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class PostService {
-    public static final Logger LOG = LoggerFactory.getLogger(PostService.class);
-
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final ImageRepository imageRepository;
-    private final PostFacade postFacade;
-
-    @Autowired
-    public PostService(PostRepository postRepository, UserRepository userRepository, ImageRepository imageRepository, PostFacade postFacade) {
-        this.postRepository = postRepository;
-        this.userRepository = userRepository;
-        this.imageRepository = imageRepository;
-        this.postFacade = postFacade;
-    }
+    private final ModelMapper modelMapper;
 
     public Post getPostById(Long postId, Principal principal) {
         User user = getUserByPrincipal(principal);
@@ -43,15 +33,12 @@ public class PostService {
                         "Post cannot be found for username: " + user.getEmail()));
     }
 
-    //Переписать с помощью Mapper'a
     public Post createPost(PostDTO postDTO, Principal principal) {
         User user = getUserByPrincipal(principal);
-        Post post = new Post();
+        Post post = modelMapper.map(postDTO, Post.class);
+        System.out.println(post);
         post.setUser(user);
-        post.setCaption(postDTO.getCaption());
-        post.setLocation(postDTO.getLocation());
-        post.setTitle(postDTO.getTitle());
-        LOG.info("Saving Post for User: {}", user.getEmail());
+        log.info("Saving Post for User: {}", user.getEmail());
         return postRepository.save(post);
     }
 

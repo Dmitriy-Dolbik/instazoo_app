@@ -3,8 +3,7 @@ package com.example.instazoo_app.security;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.services.CustomUserDetailsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,8 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Component
+@Slf4j
 public class JWTAuthenticationFilter extends OncePerRequestFilter {
-    public static final Logger LOG = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
     private final JWTTokenProvider jwtTokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
 
@@ -55,7 +54,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                         SecurityContextHolder.getContext().setAuthentication(authToken);
                     }
                 } catch (JWTVerificationException exs) {
-                    LOG.error("Could not set user authentication");
+                    log.error("Could not set user authentication");
                 }
             }
         }

@@ -6,7 +6,7 @@ import lombok.Getter;
 public class InvalidLoginResponse {
     private String message;
 
-    public InvalidLoginResponse(){
+    public InvalidLoginResponse() {
         this.message = "Incorrect credentials";
     }
 }

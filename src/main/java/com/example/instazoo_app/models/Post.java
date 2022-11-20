@@ -32,13 +32,13 @@ public class Post {
     private Set<Long> likedUsers = new HashSet<>();
     @ManyToOne
     private User user;
-    @OneToMany(mappedBy = "post", cascade=CascadeType.REFRESH, orphanRemoval = true)
+    @OneToMany(mappedBy = "post", cascade = CascadeType.REFRESH, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
     @Column(updatable = false)
     private LocalDateTime createdDate;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         this.createdDate = LocalDateTime.now();
     }
 }

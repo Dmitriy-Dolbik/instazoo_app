@@ -20,12 +20,13 @@ public class JWTTokenProvider {
     @Value("${jwt_secret}")
     private String secret;
     private final UserRepository userRepository;
+
     @Autowired
     public JWTTokenProvider(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public String generateToken(Authentication authentication){
+    public String generateToken(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
         Date expirationDate = Date.from(ZonedDateTime.now().plusMinutes(30).toInstant());
 
@@ -39,6 +40,7 @@ public class JWTTokenProvider {
                 .withExpiresAt(expirationDate)
                 .sign(Algorithm.HMAC256(secret));
     }
+
     public Long getUserIdFromToken(String token) throws JWTVerificationException {
         JWTVerifier verifier = JWT.require(Algorithm.HMAC256(secret))
                 .withSubject("User details")

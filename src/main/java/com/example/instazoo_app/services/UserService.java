@@ -3,6 +3,7 @@ package com.example.instazoo_app.services;
 import com.example.instazoo_app.dto.UserDTO;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.repositories.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -11,12 +12,9 @@ import java.security.Principal;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
-    @Autowired
-    public UserService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
     public User updateUser(UserDTO userDTO, Principal principal){
         User user = getUserByPrincipal(principal);
         user.setName(userDTO.getName());

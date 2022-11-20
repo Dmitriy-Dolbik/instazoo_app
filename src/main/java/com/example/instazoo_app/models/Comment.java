@@ -24,7 +24,7 @@ public class Comment {
     private Post post;
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         this.createdDate = LocalDateTime.now();
     }
 }

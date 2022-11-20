@@ -1,7 +1,6 @@
 package com.example.instazoo_app;
 
 import com.example.instazoo_app.exceptions.NotFoundException;
-import com.example.instazoo_app.facade.PostFacade;
 import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.repositories.ImageRepository;
@@ -12,6 +11,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
+import org.springframework.ui.Model;
 
 import java.security.Principal;
 import java.util.Optional;
@@ -24,7 +25,7 @@ public class PostServiceTest {
     private static PostRepository postRepository;
     private static UserRepository userRepository;
     private static ImageRepository imageRepository;
-    private static PostFacade postFacade;
+    private static ModelMapper modelMapper;
     private static final String EMAIL = "jony@yandex.com";
 
     @BeforeAll
@@ -32,9 +33,9 @@ public class PostServiceTest {
         postRepository = Mockito.mock(PostRepository.class);
         userRepository = Mockito.mock(UserRepository.class);
         imageRepository = Mockito.mock(ImageRepository.class);
-        postFacade = Mockito.mock(PostFacade.class);
+        modelMapper = Mockito.mock(ModelMapper.class);
 
-        postService = new PostService(postRepository, userRepository, imageRepository, postFacade);
+        postService = new PostService(postRepository, userRepository, imageRepository, modelMapper);
     }
 
     @Test

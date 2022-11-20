@@ -47,7 +47,7 @@ public class User implements UserDetails {
     private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL,
-    orphanRemoval = true)
+            orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
     @JsonFormat(pattern = "yyyy-mm-dd HH:mm:ss")
     @Column(updatable = false)
@@ -69,7 +69,7 @@ public class User implements UserDetails {
     }
 
     @PrePersist
-    protected void onCreate(){
+    protected void onCreate() {
         this.createdDate = LocalDateTime.now();
     }
 
@@ -77,21 +77,25 @@ public class User implements UserDetails {
      * SECURITY
      */
     @Override
-    public String getPassword(){
+    public String getPassword() {
         return password;
     }
+
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
+
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
+
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
+
     @Override
     public boolean isEnabled() {
         return true;

@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Bean;
 public class InstazooAppApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(InstazooAppApplication.class, args);
+		SpringApplication.run(
+				InstazooAppApplication.class, args);
 	}
 
 }

@@ -31,6 +31,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.jwtAuthenticationEntryPoint = authenticationEntryPoint;
     }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors()
@@ -53,11 +54,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(customUserDetailsService)
                 .passwordEncoder(getPasswordEncoder());
     }
+
     @Bean
     @Override
     protected AuthenticationManager authenticationManager() throws Exception {
         return super.authenticationManager();
     }
+
     @Bean
     PasswordEncoder getPasswordEncoder() {
         return new BCryptPasswordEncoder();

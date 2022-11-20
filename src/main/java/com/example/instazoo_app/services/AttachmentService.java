@@ -6,9 +6,8 @@ import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
 import com.example.instazoo_app.repositories.ImageRepository;
 import com.example.instazoo_app.repositories.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -28,18 +27,13 @@ import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
 @Service
-public class ImageUploadService {
+@RequiredArgsConstructor
+@Slf4j
+public class AttachmentService {
     @Value("${file.storage}")
     private String filePath;
-    public static final Logger LOG = LoggerFactory.getLogger(ImageUploadService.class);
     private final ImageRepository imageRepository;
     private final UserRepository userRepository;
-
-    @Autowired
-    public ImageUploadService(ImageRepository imageRepository, UserRepository userRepository) {
-        this.imageRepository = imageRepository;
-        this.userRepository = userRepository;
-    }
 
     private String saveFileToServer(byte[] bytes) {
         String fileName = UUID.randomUUID().toString();
@@ -63,7 +57,7 @@ public class ImageUploadService {
 
     public Attachment uploadImageToUser(MultipartFile file, Principal principal) throws IOException {
         User user = getUserByPrincipal(principal);
-        LOG.info("Uploading image profile to User {}", user.getUsername());
+        log.info("Uploading image profile to User {}", user.getUsername());
 
         Attachment userProfileImage = imageRepository.findByUserId(user.getId()).orElse(null);
         if (!ObjectUtils.isEmpty(userProfileImage)) {
@@ -91,7 +85,7 @@ public class ImageUploadService {
         String fileName = saveFileToServer(file.getBytes());
         attachment.setServerFileName(fileName);
         attachment.setName(file.getOriginalFilename());
-        LOG.info("Uploading image to Post {}", post.getId());
+        log.info("Uploading image to Post {}", post.getId());
 
         return imageRepository.save(attachment);
     }
@@ -130,7 +124,7 @@ public class ImageUploadService {
             }
             outputStream.close();
         } catch (IOException e) {
-            LOG.error("Cannot compress Bytes");
+            log.error("Cannot compress Bytes");
         }
         System.out.println("Compressed Image Byte Size - " + outputStream.toByteArray().length);
         return outputStream.toByteArray();
@@ -149,7 +143,7 @@ public class ImageUploadService {
             }
             outputStream.close();
         } catch (IOException | DataFormatException e) {
-            LOG.error("Cannot decompress Bytes");
+            log.error("Cannot decompress Bytes");
         }
         return outputStream.toByteArray();
     }
