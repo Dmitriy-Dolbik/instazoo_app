@@ -36,7 +36,6 @@ public class PostService {
     public Post createPost(PostDTO postDTO, Principal principal) {
         User user = getUserByPrincipal(principal);
         Post post = modelMapper.map(postDTO, Post.class);
-        System.out.println(post);
         post.setUser(user);
         log.info("Saving Post for User: {}", user.getEmail());
         return postRepository.save(post);

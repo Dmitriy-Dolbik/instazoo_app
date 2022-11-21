@@ -37,4 +37,5 @@ class UserServiceTest {
 		Assertions.assertEquals(2L, currentUser.getId());
 		Assertions.assertEquals("Jack", currentUser.getName());
 	}
+
 }

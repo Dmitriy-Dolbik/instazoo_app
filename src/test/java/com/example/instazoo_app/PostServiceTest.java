@@ -1,5 +1,6 @@
 package com.example.instazoo_app;
 
+import com.example.instazoo_app.dto.PostDTO;
 import com.example.instazoo_app.exceptions.NotFoundException;
 import com.example.instazoo_app.models.Post;
 import com.example.instazoo_app.models.User;
@@ -58,6 +59,30 @@ public class PostServiceTest {
         Assertions.assertEquals("caption", postById.getCaption());
     }
     @Test
+    void creatPostTest(){
+        // Given
+        Principal principal = Mockito.mock(Principal.class);
+        PostDTO postDTO = Mockito.mock(PostDTO.class);
+
+        User user = Mockito.mock(User.class);
+        Mockito.when(userRepository.findUserByUsername(any())).thenReturn(Optional.of(user));
+
+        Post post = new Post(2L, "title", "caption", "location");
+
+        Mockito.when(modelMapper.map(postDTO, Post.class)).thenReturn(post);
+
+        Mockito.when(user.getEmail()).thenReturn(EMAIL);
+
+        Mockito.when(postRepository.save(post)).thenReturn(post);
+
+        // When
+        Post createdPost = postService.createPost(postDTO, principal);
+
+        // Then
+        Assertions.assertEquals("title", createdPost.getTitle());
+        Assertions.assertEquals("caption", createdPost.getCaption());
+    }
+    @Test
     void lackOfPostByUserIdShouldThrowException(){
         // Given
         Principal principal = Mockito.mock(Principal.class);
@@ -75,4 +100,5 @@ public class PostServiceTest {
         Assertions.assertEquals("Post cannot be found for username: " + EMAIL
                 , notFoundException.getMessage());
     }
+
 }
