@@ -11,7 +11,6 @@ public class ErrorUtil {
     public static String createErrorMessageToClient(BindingResult bindingResult){
         StringBuilder errorMsg = new StringBuilder();
 
-        //Указывает на аннотацию и ошибку, которая к ней  относится
         List<ObjectError> objErrors = bindingResult.getAllErrors();
         if (!CollectionUtils.isEmpty(objErrors)){
             for (ObjectError error : objErrors){

@@ -72,6 +72,11 @@ public class PostController {
 
         return new ResponseEntity<>(postDTO, HttpStatus.OK);
     }
+    @GetMapping("/{postId}/like")
+    public ResponseEntity<List<String>> getLikedUsers(@PathVariable("postId") Long postId){
+        List<String> likedUsersList = postService.getLikedUsersNames(postId);
+        return new ResponseEntity<>(likedUsersList, HttpStatus.OK);
+    }
 
     @PostMapping("/{postId}/delete")
     public ResponseEntity<MessageResponse> deletePost(@PathVariable("postId") Long postId, Principal principal) {

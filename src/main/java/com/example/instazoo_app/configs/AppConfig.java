@@ -32,10 +32,6 @@ public class AppConfig {
                 .setPostConverter(context -> {
                     context.getDestination().setUsername(context.getSource().getUser().getUsername());
                     context.getDestination().setLikes(postRepository.countLikes(context.getSource().getId()));
-                    context.getDestination().setLikedUsers(context.getSource().getLikedUsers()
-                            .stream()
-                            .map(id -> userRepository.findById(id).get().getUsername())
-                            .collect(Collectors.toSet()));
                     return context.getDestination();
                 });
 

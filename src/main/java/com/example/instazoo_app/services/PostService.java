@@ -52,7 +52,10 @@ public class PostService {
 
     public Post likePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException("Post cannot be found"));
+                .orElseThrow(() -> {
+                    log.error("Post with id - {} cannot be found", postId);
+                    return new NotFoundException("Post cannot be found");
+                });
 
         Optional<Long> userLiked = post.getLikedUsers()
                 .stream()
@@ -77,5 +80,10 @@ public class PostService {
         String username = principal.getName();
         return userRepository.findUserByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found with username : " + username));
+    }
+
+    public List<String> getLikedUsersNames(Long postId) {
+        List<Long> likedUsersIdList = postRepository.findAllIdLikedUsersNames(postId);
+        return postRepository.findLikedUsersByPostId(likedUsersIdList);
     }
 }
